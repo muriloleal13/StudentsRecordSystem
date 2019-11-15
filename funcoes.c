@@ -5,6 +5,8 @@
 #include <string.h>
 #include "funcoes.h"
 
+#define COUNT 10 
+
 ListStudents* criaListStudents(){
 	return NULL;
 }
@@ -19,6 +21,7 @@ int treeIsEmpty(Tree* t){
 }
 
 void showTree(Tree* t){  
+
 	printf("<");
 	if(!treeIsEmpty(t)){
 		printf("%s ", (*t->aluno).nome);
@@ -29,12 +32,12 @@ void showTree(Tree* t){
 }
 
 void insertTree(Tree** t, ListStudents* newStd, int type){
+
 	if(*t == NULL){
 		*t = (Tree*)malloc(sizeof(Tree));
 		(*t)->sae = NULL;
 		(*t)->sad = NULL;
 		(*t)->aluno = &(newStd->aluno);
-		printf("%s\n", (*(*t)->aluno).nome);
 	}else{
 		if((newStd->aluno.cod < (*(*t)->aluno).cod && type == 1) || (strcmp(newStd->aluno.nome, (*(*t)->aluno).nome) < 0 && type == 2) || (newStd->aluno.medFinal < (*(*t)->aluno).medFinal && type == 3))
 			insertTree(&(*t)->sae, newStd, type);
@@ -43,10 +46,56 @@ void insertTree(Tree** t, ListStudents* newStd, int type){
 	}
 }
 
-int isInTree(Tree* t, ListStudents* std){
-	if(treeIsEmpty(t))
-		return 0;
-	return (*t->aluno).cod == std->aluno.cod || isInTree(t->sae, std) || isInTree(t->sad, std);
+bool isInTree(Tree* t, Student std){
+
+	if(treeIsEmpty(t)){
+		printf("Arvore esta vazia.\n");
+		return false;
+	}
+
+	if((*t->aluno).cod == std.cod || strcmp((*t->aluno).nome, std.nome) == 0 || (*t->aluno).medFinal == std.medFinal || isInTree(t->sae, std) || isInTree(t->sad, std)){
+		printf("Aluno encontrado!\nCodigo:%d\nNome: %s\nMedia Final: %.2f\n---\n", (*t->aluno).cod, (*t->aluno).nome, (*t->aluno).medFinal);
+		return true;
+	}else{
+		printf("Aluno nao encontrado.\n");
+		return false;
+	}
+}
+
+void searchStd(Tree* t, int type){
+
+	Student std;
+
+	switch(type){
+		case 1:
+			printf("Digite o Codigo do aluno: ");
+			scanf("%d", &std.cod);
+			fflush(stdin);
+			break;
+		case 2:
+			printf("Digite o Nome do aluno: ");
+			gets(std.nome);
+			fflush(stdin);
+			break;
+		case 3:
+			printf("Digite a Media Final do aluno: ");
+			scanf("%f", &std.medFinal);
+			fflush(stdin);
+			break;
+	}
+
+	isInTree(t, std);
+}
+
+Tree* freeTree(Tree* t){
+
+	if(!treeIsEmpty(t)){
+		freeTree(t->sae);
+		freeTree(t->sad);
+		free(t);
+	}
+
+	return NULL;
 }
 
 //MANTER ALUNO
@@ -84,8 +133,7 @@ ListStudents* newStd(ListStudents* listStd, Tree** tCod, Tree** tNome, Tree** tM
 	return listStd;
 }
 
-
-ListStudents* delStd(ListStudents* listStd){
+ListStudents* delStd(ListStudents* listStd, Tree** tCod, Tree** tNome, Tree** tMed){
 
 	printf("=== REMOVE ALUNO ===\n");
 
@@ -111,9 +159,20 @@ ListStudents* delStd(ListStudents* listStd){
 		ant->prox = p->prox;
 	}
 
-	printf("Aluno %s removido com sucesso.\n", p->aluno.nome);
+	*tCod = freeTree(*tCod);
+	*tNome = freeTree(*tNome);
+	*tMed =freeTree(*tMed);
 
+	printf("Aluno %s removido com sucesso.\n", p->aluno.nome);
 	free(p);
+
+	p = listStd;
+	while(p != NULL){
+		insertTree(tCod, p, 1);
+		insertTree(tNome, p, 2);
+		insertTree(tMed, p, 3);
+		p = p->prox;
+	}
 
 	return listStd;
 }
@@ -169,8 +228,12 @@ void menuTree(Tree* tCod, Tree* tNome, Tree* tMed, int type){
 				if(type == 1) showTree(tCod);
 				else if(type == 2) showTree(tNome);
 				else showTree(tMed);
+				printf("\n");
 				break;
 			case 2:
+				if(type == 1) searchStd(tCod, type);
+				else if(type == 2) searchStd(tNome, type);
+				else searchStd(tMed, type);
 				break;
 			case 3:
 				printf("Voltando ao menu...\n");
@@ -178,7 +241,7 @@ void menuTree(Tree* tCod, Tree* tNome, Tree* tMed, int type){
 		}
 		op = opMenuType(type);
 	}
-
+	system("cls");
 }
 
 void menu(){
@@ -197,7 +260,7 @@ void menu(){
 				listStd = newStd(listStd, &tCod, &tNome, &tMed);
 				break;
 			case 2:
-				listStd = delStd(listStd);
+				listStd = delStd(listStd, &tCod, &tNome, &tMed);
 				break;
 			case 3:
 				menuTree(tCod, tNome, tMed, 1);

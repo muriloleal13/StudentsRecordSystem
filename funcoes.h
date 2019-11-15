@@ -22,12 +22,14 @@ Tree* createTree();
 int treeIsEmpty(Tree* tree);
 void showTree(Tree* t);
 void insertTree(Tree** t, ListStudents* newStd, int type);
-int isInTree(Tree* t, ListStudents* newStd);
+bool isInTree(Tree* t, Student std);
+void searchStd(Tree* t, int type);
+Tree* freeTree(Tree* t);
 
 //Manter Aluno
 ListStudents* insertStd(ListStudents* listStd, Student newStd, Tree** tCod, Tree** tNome, Tree** tMed);
 ListStudents* newStdo(ListStudents* listStd, Tree** tCod, Tree** tNome, Tree** tMed);
-ListStudents* delStd(ListStudents* listStd);
+ListStudents* delStd(ListStudents* listStd, Tree** tCod, Tree** tNome, Tree** tMed);
 
 //Menu
 int opMenu();
