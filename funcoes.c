@@ -31,6 +31,87 @@ void showTree(Tree* t){
 	printf(">");
 }
 
+int _print_t(Tree* tree, int is_left, int offset, int depth, char s[20][255], int type){
+    char b[50];
+    int width;
+
+    if (!tree) return 0;
+
+    switch(type){
+    	case 1:
+    		width = 5;
+    		sprintf(b, "(%03d)", (*tree->aluno).cod);
+    		break;
+    	case 2:
+    		width = strlen((*tree->aluno).nome) + 2;
+    		sprintf(b, "(%s)", (*tree->aluno).nome);
+    		break;
+    	case 3:
+    		width = 6;
+    		if((*tree->aluno).medFinal > 9.99)
+    			width++;
+    		sprintf(b, "(%.2f)", (*tree->aluno).medFinal);
+    		break;
+
+    }
+
+    int left  = _print_t(tree->sae,  1, offset,                depth + 1, s, type);
+    int right = _print_t(tree->sad, 0, offset + left + width, depth + 1, s, type);
+
+#ifdef COMPACT
+    for (int i = 0; i < width; i++)
+        s[depth][offset + left + i] = b[i];
+
+    if (depth && is_left) {
+
+        for (int i = 0; i < width + right; i++)
+            s[depth - 1][offset + left + width/2 + i] = '-';
+
+        s[depth - 1][offset + left + width/2] = '.';
+
+    } else if (depth && !is_left) {
+
+        for (int i = 0; i < left + width; i++)
+            s[depth - 1][offset - width/2 + i] = '-';
+
+        s[depth - 1][offset + left + width/2] = '.';
+    }
+#else
+    for (int i = 0; i < width; i++)
+        s[2 * depth][offset + left + i] = b[i];
+
+    if (depth && is_left) {
+
+        for (int i = 0; i < width + right; i++)
+            s[2 * depth - 1][offset + left + width/2 + i] = '-';
+
+        s[2 * depth - 1][offset + left + width/2] = '+';
+        s[2 * depth - 1][offset + left + width + right + width/2] = '+';
+
+    } else if (depth && !is_left) {
+
+        for (int i = 0; i < left + width; i++)
+            s[2 * depth - 1][offset - width/2 + i] = '-';
+
+        s[2 * depth - 1][offset + left + width/2] = '+';
+        s[2 * depth - 1][offset - width/2 - 1] = '+';
+    }
+#endif
+
+    return left + width + right;
+}
+
+void print_t(Tree* tree, int type){
+    char s[20][255];
+    for (int i = 0; i < 20; i++)
+        sprintf(s[i], "%80s", " ");
+
+    _print_t(tree, 0, 0, 0, s, type);
+
+    for (int i = 0; i < 20; i++)
+        printf("%s\n", s[i]);
+}
+
 void insertTree(Tree** t, ListStudents* newStd, int type){
 
 	if(*t == NULL){
@@ -225,9 +306,9 @@ void menuTree(Tree* tCod, Tree* tNome, Tree* tMed, int type){
 	while(op != 3){
 		switch(op){
 			case 1:
-				if(type == 1) showTree(tCod);
-				else if(type == 2) showTree(tNome);
-				else showTree(tMed);
+				if(type == 1) print_t(tCod, 1);
+				else if(type == 2) print_t(tNome, 2);
+				else print_t(tMed, 3);
 				printf("\n");
 				break;
 			case 2:

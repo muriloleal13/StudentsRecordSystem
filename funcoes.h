@@ -21,6 +21,8 @@ Tree* createTree();
 //Arvore
 int treeIsEmpty(Tree* tree);
 void showTree(Tree* t);
+int _print_t(Tree* tree, int is_left, int offset, int depth, char s[20][255], int type);
+void print_t(Tree* tree, int type);
 void insertTree(Tree** t, ListStudents* newStd, int type);
 bool isInTree(Tree* t, Student std);
 void searchStd(Tree* t, int type);
