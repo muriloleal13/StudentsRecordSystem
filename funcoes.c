@@ -5,7 +5,7 @@
 #include <string.h>
 #include "funcoes.h"
 
-ListStudents* criaListAlunos(){
+ListStudents* criaListStudents(){
 	return NULL;
 }
 
@@ -28,38 +28,41 @@ void showTree(Tree* t){
 	printf(">");
 }
 
-void insertTree(Tree** t, Student* newStd, int type){
+void insertTree(Tree** t, ListStudents* newStd, int type){
 	if(*t == NULL){
 		*t = (Tree*)malloc(sizeof(Tree));
 		(*t)->sae = NULL;
 		(*t)->sad = NULL;
-		(*t)->aluno = newStd;
+		(*t)->aluno = &(newStd->aluno);
+		printf("%s\n", (*(*t)->aluno).nome);
 	}else{
-		Student std = (*(*t)->aluno);
-		if(((*newStd).cod < std.cod && type == 1) || (strcmp((*newStd).nome, std.nome) < 0 && type == 2) || ((*newStd).medFinal < std.medFinal && type == 3))
+		if((newStd->aluno.cod < (*(*t)->aluno).cod && type == 1) || (strcmp(newStd->aluno.nome, (*(*t)->aluno).nome) < 0 && type == 2) || (newStd->aluno.medFinal < (*(*t)->aluno).medFinal && type == 3))
 			insertTree(&(*t)->sae, newStd, type);
 		else		
 			insertTree(&(*t)->sad, newStd, type);
 	}
 }
 
-int isInTree(Tree* t, Student std){
+int isInTree(Tree* t, ListStudents* std){
 	if(treeIsEmpty(t))
 		return 0;
-	return t->std == std || isInTree(t->sae, std) || isInTree(t->sad, std);
+	return (*t->aluno).cod == std->aluno.cod || isInTree(t->sae, std) || isInTree(t->sad, std);
 }
 
 //MANTER ALUNO
-ListStudents* insertStd(ListStudents* listStd, Student newStd){
+ListStudents* insertStd(ListStudents* listStd, Student newStd, Tree** tCod, Tree** tNome, Tree** tMed){
 
 	ListStudents* new = (ListStudents*) malloc(sizeof(ListStudents));
 
 	new->aluno = newStd;
 	new->prox = listStd;
+	insertTree(tCod, new, 1);
+	insertTree(tNome, new, 2);
+	insertTree(tMed, new, 3);
 	return new;
 }
 
-ListStudents* newStd(ListStudents* listStd){
+ListStudents* newStd(ListStudents* listStd, Tree** tCod, Tree** tNome, Tree** tMed){
 
 	printf("=== CADASTRA ALUNO ===\n");
 
@@ -72,13 +75,15 @@ ListStudents* newStd(ListStudents* listStd){
 	gets(newStd.nome);
 	fflush(stdin);
 	printf("Digite a media final do aluno: ");
-	scanf("%f", newStd.medFinal);
+	scanf("%f", &newStd.medFinal);
 	fflush(stdin);
-	listStd = insertStd(listStd, newStd);
+
+	listStd = insertStd(listStd, newStd, tCod, tNome, tMed);
 	msgSuccess("Aluno", newStd.nome);
 
 	return listStd;
 }
+
 
 ListStudents* delStd(ListStudents* listStd){
 
@@ -120,29 +125,68 @@ int opMenu(){
 
 	printf("=== MENU ===\n");
 
-	printf("1 - Cadastrar Aluno\n2 - Remover Aluno\n3 - Arvore Aluno Codigo\n4 - Arvore Aluno Nome\n5 - Arvore Aluno Media FInal\n6 - Sair\nOp: ");
+	printf("1 - Cadastrar Aluno\n2 - Remover Aluno\n3 - Arvore Alunos por Codigo\n4 - Arvores Aluno por Nome\n5 - Arvores Aluno por Media Final\n6 - Sair\nOp: ");
 	scanf("%d", &op);
 	fflush(stdin);
 
 	return op;
 }
 
-int opMenuType(char str[]){
+int opMenuType(int type){
 
 	int op;
+	char str[50];
 
-	printf("=== Menu %s === \n", str);
+	switch(type){
+		case 1:
+			strcpy(str, "Codigo");
+			break;
+		case 2:
+			strcpy(str, "Nome");
+			break;
+		case 3:
+			strcpy(str, "Media Final");
+			break;
+	}
 
-	printf("1 - Lisatr %s\n2 - Busca %s\n3 - Voltar ao Menu\nOp: ", str, str);
+	printf("=== Menu Arvore Alunos por %s === \n", str);
+
+	printf("1 - Listar por %s\n2 - Busca por %s\n3 - Voltar ao Menu\nOp: ", str, str);
 	scanf("%d", &op);
 	fflush(stdin);
 
 	return op;
+}
+
+void menuTree(Tree* tCod, Tree* tNome, Tree* tMed, int type){
+
+	int op = opMenuType(type);
+	fflush(stdin);
+
+	while(op != 3){
+		switch(op){
+			case 1:
+				if(type == 1) showTree(tCod);
+				else if(type == 2) showTree(tNome);
+				else showTree(tMed);
+				break;
+			case 2:
+				break;
+			case 3:
+				printf("Voltando ao menu...\n");
+				break;
+		}
+		op = opMenuType(type);
+	}
+
 }
 
 void menu(){
 
 	ListStudents* listStd = criaListStudents();
+	Tree* tCod = createTree();
+	Tree* tNome = createTree();
+	Tree* tMed = createTree();
 
 	int op = opMenu();
 	fflush(stdin);
@@ -150,16 +194,19 @@ void menu(){
 	while(op != 6){
 		switch(op){
 			case 1:
-				listStd = insertStd();
+				listStd = newStd(listStd, &tCod, &tNome, &tMed);
 				break;
 			case 2:
-				listStd = delStd();
+				listStd = delStd(listStd);
 				break;
 			case 3:
+				menuTree(tCod, tNome, tMed, 1);
 				break;
 			case 4:
+				menuTree(tCod, tNome, tMed, 2);
 				break;
 			case 5:
+				menuTree(tCod, tNome, tMed, 3);
 				break;
 			case 6:
 				printf("Sessao finalizada.\n");
@@ -175,5 +222,5 @@ void menu(){
 
 //MENSAGENS PADRÕES
 void msgSuccess(char str[], char cod[]){
-	printf("%s %s cadastrada com sucesso\n", str, cod);
+	printf("%s %s cadastrado com sucesso\n", str, cod);
 }

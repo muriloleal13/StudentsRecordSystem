@@ -21,17 +21,18 @@ Tree* createTree();
 //Arvore
 int treeIsEmpty(Tree* tree);
 void showTree(Tree* t);
-void insertTree(Tree** t, Student* newStd, int type);
-int isInTree(Tree* t, Student* newStd);
+void insertTree(Tree** t, ListStudents* newStd, int type);
+int isInTree(Tree* t, ListStudents* newStd);
 
 //Manter Aluno
-ListStudents* insertStd(ListStudents* listStd, Student newStd);
-ListStudents* newStdo(ListStudents* listStd);
+ListStudents* insertStd(ListStudents* listStd, Student newStd, Tree** tCod, Tree** tNome, Tree** tMed);
+ListStudents* newStdo(ListStudents* listStd, Tree** tCod, Tree** tNome, Tree** tMed);
 ListStudents* delStd(ListStudents* listStd);
 
 //Menu
 int opMenu();
-int opMenuType(char str[]);
+int opMenuType(int type);
+void menuTree(Tree* tCod, Tree* tNome, Tree* tMed, int type);
 void menu();
 
 //Mensagens
